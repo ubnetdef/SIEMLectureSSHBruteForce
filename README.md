@@ -7,8 +7,12 @@ By default it targets `10.42.0.7` through `10.42.36.7` (x = 0-36).
 ## Setup
 
 ```
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 ```
+
+On Debian/Ubuntu you may first need `apt install python3-venv`. Alternatively, `apt install python3-paramiko` works without a venv.
 
 ## Usage
 
