@@ -14,10 +14,16 @@ pip install -r requirements.txt
 
 On Debian/Ubuntu you may first need `apt install python3-venv`. Alternatively, `apt install python3-paramiko` works without a venv.
 
+## Lecture Command
+
+```
+python3 ssh_run.py -x 0-36 -u sysadmin -c "whoami"
+```
+
 ## Usage
 
 ```
-python ssh_run.py -x 0-36 -u myuser -c "hostname"
+python3 ssh_run.py -x 0-36 -u myuser -c "hostname"
 ```
 
 You'll be prompted for the password once; it's used for every host. To skip the prompt, set `SSH_PASSWORD` in the environment.
