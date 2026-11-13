@@ -42,6 +42,14 @@ You'll be prompted for the password once; it's used for every host. To skip the 
 
 Press Ctrl+C to stop.
 
+## Backup
+
+`backup/` holds a fallback brute-force approach using hydra instead of `ssh_run.py`:
+
+- `backup/syssecubuntus.txt` — list of target IPs (same range as above)
+- `backup/README.md` — the hydra command
+- `backup/run_every_4s.sh` — loops that hydra command every 4 seconds, in the background, in case the main script doesn't work
+
 ## Note
 
 Unknown host keys are accepted automatically (lab use). To be strict, change `AutoAddPolicy` to `RejectPolicy` in `run_on_host`.
