@@ -1,1 +1,1 @@
-hydra -l root -p 'asdfasdjkfie' -M syssecubuntus.txt ssh
+hydra -l root -p 'hiasdfasdfasdf' -M syssecubuntus.txt ssh -t 32 -c 1
