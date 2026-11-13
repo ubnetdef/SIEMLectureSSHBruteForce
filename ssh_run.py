@@ -12,7 +12,7 @@ import argparse
 import getpass
 import os
 import time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import paramiko
 
@@ -41,7 +41,7 @@ def run_on_host(host, user, password, key_file, command, timeout):
     name, _, port = host.partition(":")
     client = paramiko.SSHClient()
     client.load_system_host_keys()
-    client.set_missing_host_key_policy(paramiko.RejectPolicy())  # change to AutoAddPolicy for lab use
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # lab use: accept unknown host keys
     try:
         client.connect(
             name,
@@ -69,24 +69,27 @@ def main():
     p.add_argument("-H", "--hosts", nargs="+", help="hosts and/or host files (overrides -x)")
     p.add_argument("-u", "--user", required=True)
     p.add_argument("-k", "--key", help="private key file")
-    p.add_argument("-p", "--password", action="store_true", help="prompt for a password")
     p.add_argument("-c", "--command", required=True)
-    p.add_argument("-t", "--timeout", type=int, default=10)
-    p.add_argument("-w", "--workers", type=int, default=5)
+    p.add_argument("-t", "--timeout", type=int, default=3, help="per-host timeout in seconds (default 3)")
+    p.add_argument("-w", "--workers", type=int, default=0, help="parallel workers (default: one per host)")
     p.add_argument("-i", "--interval", type=float, default=5, help="seconds between sweeps (default 5)")
     p.add_argument("--once", action="store_true", help="run a single sweep and exit")
     a = p.parse_args()
 
-    password = getpass.getpass("SSH password: ") if a.password else None
+    # Password auth is the default; it is prompted once and reused for every host.
+    # Set SSH_PASSWORD to skip the prompt. Passing -k switches to key auth instead.
+    password = None
+    if not a.key:
+        password = os.environ.get("SSH_PASSWORD") or getpass.getpass("SSH password: ")
     hosts = load_hosts(a.hosts) if a.hosts else hosts_from_range(a.range)
 
     try:
         while True:
             start = time.monotonic()
             print(f"--- sweep at {time.strftime('%H:%M:%S')} ---")
-            with ThreadPoolExecutor(max_workers=a.workers) as pool:
+            with ThreadPoolExecutor(max_workers=a.workers or len(hosts)) as pool:
                 futures = [pool.submit(run_on_host, h, a.user, password, a.key, a.command, a.timeout) for h in hosts]
-                for fut in futures:
+                for fut in as_completed(futures):
                     host, code, out, err = fut.result()
                     print(f"=== {host} (exit {code}) ===")
                     if out:
