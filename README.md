@@ -7,7 +7,7 @@ By default it targets `10.42.0.7` through `10.42.36.7` (x = 0-36).
 ## Setup
 
 ```
-pip install paramiko
+pip install -r requirements.txt
 ```
 
 ## Usage
