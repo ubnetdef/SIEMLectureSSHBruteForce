@@ -17,7 +17,13 @@ from concurrent.futures import ThreadPoolExecutor
 import paramiko
 
 
-DEFAULT_HOSTS = [f"10.42.{x}.7" for x in range(1, 37)]
+DEFAULT_RANGE = "0-36"
+
+
+def hosts_from_range(spec):
+    """'0-36' -> 10.42.0.7 ... 10.42.36.7"""
+    lo, _, hi = spec.partition("-")
+    return [f"10.42.{x}.7" for x in range(int(lo), int(hi or lo) + 1)]
 
 
 def load_hosts(items):
@@ -58,8 +64,9 @@ def run_on_host(host, user, password, key_file, command, timeout):
 
 def main():
     p = argparse.ArgumentParser(description="Run a command on multiple hosts via SSH")
-    p.add_argument("-H", "--hosts", nargs="+", default=DEFAULT_HOSTS,
-                   help="hosts and/or host files (default: 10.42.1-36.7)")
+    p.add_argument("-x", "--range", default=DEFAULT_RANGE,
+                   help="x range for 10.42.x.7 (default: 0-36)")
+    p.add_argument("-H", "--hosts", nargs="+", help="hosts and/or host files (overrides -x)")
     p.add_argument("-u", "--user", required=True)
     p.add_argument("-k", "--key", help="private key file")
     p.add_argument("-p", "--password", action="store_true", help="prompt for a password")
@@ -71,7 +78,7 @@ def main():
     a = p.parse_args()
 
     password = getpass.getpass("SSH password: ") if a.password else None
-    hosts = load_hosts(a.hosts)
+    hosts = load_hosts(a.hosts) if a.hosts else hosts_from_range(a.range)
 
     try:
         while True:
